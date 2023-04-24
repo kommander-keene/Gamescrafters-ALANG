@@ -1,30 +1,36 @@
 #include "61b.h"
-
-void cs_push(CharStack** stack, char value) {
+CharStack* cs_init() {
     CharStack* newElt = (CharStack*) malloc(sizeof(CharStack));
-    newElt->length = 1;
+    newElt->length = 0;
+    newElt->prev = NULL;
+    newElt->value = '\0';
+    return newElt;
+}
+void cs_push(CharStack** stack, char value) {
+    bool isEmpty = cs_isEmpty(stack);
+    CharStack* newElt = (CharStack*) malloc(sizeof(CharStack));
     newElt->prev = *stack;
     newElt->value = value;
-    if (!cs_isEmpty(stack)) {
-        newElt->length = (*stack)->length+1;
-    }
-    //Increment pointer to head
     *stack = newElt;
+    // Something wrong here. Not sure why isEmpty is changing!
+    newElt->length = newElt->prev->length + 1; 
 }
 void cs_delHead(CharStack** stack) {
-    CharStack* prev = (*stack)->prev;
+    if (cs_isEmpty(stack)) {
+        return;
+    }
+    
+    CharStack* previous = (*stack)->prev;
     free(*stack); // Free the memory associated with the position
-    *stack = prev;
+    *stack = previous; 
 }
 char cs_pop(CharStack** stack) {
-    char c = (*stack)->value;
-    CharStack* pastPtr = (*stack)->prev; // pastPtr points to the prev, which points to the previous node.
-    free(*stack); // Free the struct at the head
-    *stack = pastPtr; // Set the previous head to the correct one
+    char c = cs_peek(stack);
+    cs_delHead(stack);
     return c;
 }
 bool cs_isEmpty(CharStack** stack) {
-    return (*stack) == NULL;
+    return (*stack) == NULL || (*stack)->length == 0 || (*stack)->value == '\0';
 }
 int cs_len(CharStack** stack) {
     if ((*stack) == NULL) {
@@ -36,35 +42,67 @@ char cs_peek(CharStack** stack) {
     return (*stack)->value;
 }
 
+void cs_reverse(CharStack** stack) {
+    CharStack* reversi = cs_init();
+    while(!cs_isEmpty(stack)) {
+        char c = cs_pop(stack);
+        if (c == '\0') {
+            printf(" OH NO! ");
+        }
+        cs_push(&reversi, c);
+        
+    }
+    *stack = reversi;
+}
+
+TokenStack* ts_init() {
+    TokenStack* newElt = (TokenStack*) malloc(sizeof(TokenStack));
+    newElt->length = 0;
+    newElt->prev = NULL;
+    newElt->value = NULL;
+    return newElt;
+}
 void ts_push(TokenStack** stack, Token* value) {
-    TokenStack* newElt = (TokenStack*) malloc(sizeof(CharStack));
-    newElt->length = 1;
+    bool isEmpty = cs_isEmpty(stack);
+    TokenStack* newElt = (TokenStack*) malloc(sizeof(TokenStack));
     newElt->prev = *stack;
     newElt->value = value;
-    if (!ts_isEmpty(stack)) {
-        newElt->length = (*stack)->length+1;
-    }
-    //Increment pointer to head
     *stack = newElt;
+    // Something wrong here. Not sure why isEmpty is changing!
+    newElt->length = newElt->prev->length + 1;
 }
 void ts_delHead(TokenStack** stack) {
-    TokenStack* prev = (*stack)->prev;
+    TokenStack* previous = (*stack)->prev;
     free(*stack); // Free the memory associated with the position
-    *stack = prev;
-}
-bool ts_isEmpty(TokenStack** stack) {
-    return (*stack) == NULL;
-}
-int ts_len(TokenStack** stack) {
-    return (*stack)->length;
+    *stack = previous;
 }
 Token* ts_pop(TokenStack** stack) {
-    Token* c = (*stack)->value;
-    TokenStack* pastPtr = (*stack)->prev; // pastPtr points to the prev, which points to the previous node.
-    free(*stack); // Free the struct at the head
-    *stack = pastPtr; // Set the previous head to the correct one
+    Token* c = ts_peek(stack);
+    ts_delHead(stack);
     return c;
+}
+bool ts_isEmpty(TokenStack** stack) {
+    return (*stack) == NULL || (*stack)->length == 0;
+}
+int ts_len(TokenStack** stack) {
+    if ((*stack) == NULL) {
+        return 0;
+    }
+    return (*stack)->length;
 }
 Token* ts_peek(TokenStack** stack) {
     return (*stack)->value;
 }
+
+void ts_reverse(TokenStack** stack) {
+    TokenStack* reversi = ts_init();
+    while(!ts_isEmpty(stack)) {
+        Token* c = ts_pop(stack);
+        if (c == NULL) {
+            printf(" OH NO! ");
+        }
+        ts_push(&reversi, c);
+    }
+    *stack = reversi;
+}
+

@@ -1,17 +1,27 @@
-CC=gcc
+CC = gcc
+CFLAGS = -Wall -Wextra -g -w
+LIBS = -lm
 
-CFLAGS = -g -O0
+# List your dependencies here
+DEPS = general.h test.h 
+INSIDE = -I./parser -I./ -I./reader -I./lexer
+CES = types/61b.c reader/reader.c lexer/lexer.c
 
-ODIR=obj
+all: test
 
-all: compiler
+# Define the test target and its dependencies
+main: $(CES) main.o
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
+main.o: main.c $(DEPS)
+	$(CC) $(CFLAGS) -c -o $@ $<
+test: $(CES) test.o 
+	$(CC) $(CFLAGS) -o $@ $^ $(LIBS)
 
-%.o: %.c %.h
-	$(CC) -c -o $@ $< $(CFLAGS)
+test.o: test.c $(DEPS)
+	$(CC) $(CFLAGS) -c -o $@ $<
 
-compiler: compiler.o
-	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
+# Add the files defined by CES as dependencies to the test target
+$(CES): $(DEPS)
 
 clean:
-	rm -f *.o core compiler
-	rm -rf *.dSYM
+	rm -f *.o test

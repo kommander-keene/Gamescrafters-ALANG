@@ -3,186 +3,174 @@
 /// @brief 
 /// @param stack, stack to convert into tokens
 /// @return list composed of tokens
-TokenStack* tokenize(CharStack *stack) {
-    bool startOfToken = false;
+TokenStack* tokenize(CharStack **stack) {
     bool endOfToken = false;
 
-    TokenStack* tokens = (TokenStack*) malloc(sizeof(TokenStack));
-    while (!cs_isEmpty(&stack)) {
-        char id = cs_pop(&stack);
+    TokenStack* tokens = ts_init();
+    while (!cs_isEmpty(stack)) {
+        char id = cs_pop(stack);
+        // printf("id=%c \n", id);
         switch (id)
         {
         case 'm':
-            startOfToken = true;
+            // printf("Started Token of Type m \n");
             /* move */
             // m(t)_r1_r2
-            readDirectToken(tokens, 'm');
+            readDirectToken(stack, &tokens, 'm');
             break;
         case 'r':
-            startOfToken = true;
             /* rotate */
             // r(t)_r1_a
-            readDirectToken(tokens, 'r');
+            readDirectToken(stack, &tokens, 'r');
             break;
         case 's':
-            startOfToken = true;
             /* scale */
             // s(t)_r1_f
-            readDirectToken(tokens, 's');
+            readDirectToken(stack, &tokens, 's');
             break;
         case 'o':
-            startOfToken = true;
             /* fade out */
             // o(t)_r1
-            readDirectToken(tokens, 'o');
+            readDirectToken(stack, &tokens, 'o');
             break;
         case 'i':
-            startOfToken = true;
             /* fade in */
             // i(t)_x_r2
-            readDirectToken(tokens, 'i');
+             readDirectToken(stack, &tokens, 'i');
             break;
         case 'w':
-            startOfToken = true;
             /* wait */
             // w(t)
-            readSingleToken(tokens, 'w');
+            readSingleToken(stack, &tokens, 'w');
             break;
         case ',':
-            startOfToken = false;
             /* separator */
-            
-        case 'c':
-            startOfToken = true;
-            /* spline */
-            print("SPLINE TOKENS NOT SUPPORTED \n");
             break;
-        case 'j':
-            startOfToken = true;
-            /* random */
-            print("JUMP TOKENS NOT SUPPORTED \n");
-            break; 
+        // case 'c':
+        //     startOfToken = true;
+        //     /* spline */
+        //     printf("SPLINE TOKENS NOT SUPPORTED \n");
+        //     break;
+        // case 'j':
+        //     startOfToken = true;
+        //     /* random */
+        //     printf("JUMP TOKENS NOT SUPPORTED \n");
+        //     break; 
         case '[':
-            startOfToken = true;
             /* sequential */
-            print("SEQUENCES NOT SUPPORTED \n");
+            printf("SEQUENCES NOT SUPPORTED \n");
+
             break;
         case '(':
-            startOfToken = true;
-            print("GROUPS NOT SUPPORTED \n");
+            printf("GROUPS NOT SUPPORTED \n");
             /* group */
             break;
         default:
-            /* error*/
+            assert("Error Syntax" == "");
             break;
         }
     }
+    free(*stack);
+    return tokens;
 }
-
-
-float extractFloatParameter(CharStack *stack) {
-    char * buf = ""; // points to an empty string
-    while (isdigit(cs_peek(&stack)) || cs_peek(&stack) == '.') {
-        buf = strcat(buf, cs_pop(&stack));
+float extractFloatParameter(CharStack **stack) {
+    char* buf = (char*) malloc(sizeof(char));
+    buf[0] = '\0';
+    bool dots = false;
+    while (isdigit(cs_peek(stack)) || (cs_peek(stack) == '.' && !dots)) {
+        char c = cs_pop(stack);
+        int nextPosition = strlen(buf);
+        buf = realloc(buf, strlen(buf)+2);
+        buf[nextPosition] = c;
+        buf[nextPosition+1] = '\0';
+        if (c == '.') {
+            dots = true;
+        }
+    }
+    float output = atof(buf);
+    free(buf);
+    return output;
+}
+int extractIntParameter(CharStack **stack) {
+    char* buf = (char*) malloc(sizeof(char));
+    buf[0] = '\0';
+    while (isdigit(cs_peek(stack))) {
+        char c = cs_pop(stack);
+        int nextPosition = strlen(buf);
+        buf = realloc(buf, strlen(buf)+2);
+        buf[nextPosition] = c;
+        buf[nextPosition+1] = '\0';
     }
     int output = atof(buf);
     free(buf); // Just in case...
     return output;
 }
-int extractIntParameter(CharStack *stack) {
-    char * buf = ""; // points to an empty string
-    while (isdigit(cs_peek(&stack))) {
-        buf = strcat(buf, cs_pop(&stack));
-    }
-    int output = atoi(buf);
-    free(buf);
-    return output;
-}
-void readDirectToken(TokenStack* stack, const char tag) {
-    char paren = ts_pop(&stack); // (
-    if (paren != '(') {
-        // error
-        // free character stack later
-    }
+void readDirectToken(CharStack** chars, TokenStack** tokens, const char tag) {
+    char paren = cs_pop(chars); // (
+    assert(paren == '(');
     // Extract parameters
-    float time = extractFloatParameter(stack);
-    if (ts_pop(&stack) != ')' && ts_pop(&stack) != '_') {
-        // error
-        // free character stack later
-    }
-    int r1 = extractIntParameter(stack);
-    if (ts_pop(&stack) != '_') {
-        // error
-        // free character stack later
-    }
+    float time = extractFloatParameter(chars);
+    assert(cs_pop(chars) == ')');
+    assert(cs_pop(chars) == '_');
+
+    int r1 = extractIntParameter(chars);
     int r2 = 0;
-    if (tag != 'o') {
-        if (ts_pop(&stack) != '_') {
-        // error
-        // free character stack later
-        }
-        int r2 = extractIntParameter(stack);
+    if (tag != 'o'&& tag != 'i') {
+        assert(cs_pop(chars) == '_');
+        r2 = extractIntParameter(chars);
     }
     // Form token
-    Token* t = (Token*)malloc(sizeof(Token));
-    t->direct.time = time;
-    t->direct.a = r1;
-    t->direct.b = r2;
-    t->direct.tag = tag;
-    ts_push(&stack, t);
+    Token* t = (Token*) malloc(sizeof(Token));
+    t->type = 0;
+    t->value.direct.time = time;
+    t->value.direct.a = r1;
+    t->value.direct.b = r2;
+    t->value.direct.tag = tag;
+    ts_push(tokens, t);
 }
-void readSingleToken(TokenStack* stack, const char tag) {
-    char paren = cs_pop(&stack); // (
-    if (paren != '(') {
-        // error
-        // free character stack later
-    }
+void readSingleToken(CharStack** chars, TokenStack** tokens, const char tag) {
+    char paren = cs_pop(chars); // (
+    assert(paren == '(');
     // Extract parameters
-    float time = extractFloatParameter(stack);
-    if (ts_pop(&stack) != ')') {
-        // error
-        // free character stack later
-    }
+    float time = extractFloatParameter(chars);
+    assert(cs_pop(chars) == ')');
     int r1 = 0;
     if (tag != 'w') {
-        if (ts_pop(&stack) != '_') {
-            // error
-            // free character stack later
-        }
-        r1 = extractIntParameter(stack);
+        assert((cs_pop(chars) == '_'));
+        r1 = extractIntParameter(chars);
     }
     // Form token
     Token* t = (Token*)malloc(sizeof(Token));
-    t->single.t = time;
-    t->single.a = r1;
-    t->single.tag = tag;
-    ts_push(&stack, t);
+    t->type = 1;
+    t->value.single.t = time;
+    t->value.single.a = r1;
+    t->value.single.tag = tag;
+    ts_push(&tokens, t);
 }
-void readSplineToken(TokenStack* stack, const char tag) {
-    // TODO 
+void readSplineToken(TokenStack** stack, const char tag) {
     return;
-
-    char paren = cs_pop(&stack); // (
-    if (paren != '(') {
-        // error
-        // free character stack later
-    }
-    int n = extractIntParameter(stack);
-    if (ts_pop(&stack) != ')') {
-        // error
-        // free character stack later
-    }
-    float time = extractFloatParameter(stack);
-    if (ts_pop(&stack) != '_') {
-            // error
-            // free character stack later
-    }
-    Token* t = (Token*)malloc(sizeof(Token));
-    t->spline.t = time;
-    t->spline.len = n;
     
-    for (int i = 0; i < n; i++) {
+    // char paren = cs_pop(stack); // (
+    // if (paren != '(') {
+    //     // error
+    //     // free character stack later
+    // }
+    // int n = extractIntParameter(stack);
+    // if (ts_pop(stack) != ')') {
+    //     // error
+    //     // free character stack later
+    // }
+    // float time = extractFloatParameter(stack);
+    // if (ts_pop(stack) != '_') {
+    //         // error
+    //         // free character stack later
+    // }
+    // Token* t = (Token*)malloc(sizeof(Token));
+    // t->spline.t = time;
+    // t->spline.len = n;
+    
+    // for (int i = 0; i < n; i++) {
 
-    }
+    // }
 
 }

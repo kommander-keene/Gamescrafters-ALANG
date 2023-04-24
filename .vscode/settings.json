@@ -1,6 +1,35 @@
 {
     "files.associations": {
         "61b.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "types.h": "c",
+        "general.h": "c",
+        "reader.h": "c",
+        "parser.h": "c",
+        "stack": "c",
+        "random": "c",
+        "__locale": "c",
+        "__string": "c",
+        "string": "c",
+        "string_view": "c",
+        "sstream": "c",
+        "__bit_reference": "c",
+        "bitset": "c",
+        "chrono": "c",
+        "deque": "c",
+        "__memory": "c",
+        "limits": "c",
+        "ratio": "c",
+        "tuple": "c",
+        "type_traits": "c",
+        "vector": "c",
+        "__functional_base": "c",
+        "algorithm": "c",
+        "functional": "c",
+        "iterator": "c",
+        "memory": "c",
+        "array": "c",
+        "utility": "c",
+        "variant": "c"
     }
 }

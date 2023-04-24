@@ -1,3 +1,8 @@
+#ifndef TYPES
+#define TYPES
+
+typedef struct Token Token;
+
 typedef struct TokenDirect {
     // Defines a token for a direct move that takes in two tokens.
     // 'o' is a direct, just keep b = 0 or something.
@@ -38,12 +43,15 @@ typedef struct TokenGroup {
 typedef union TokenSet {
     TokenSeq seq;
     TokenGroup group;
-} TokenSet;
-
-typedef union Token {
+} TokenSet; 
+union TokenUnion {
     TokenDirect direct;
     TokenSingle single;
     TokenSpline spline;
     TokenSet set;
-} Token;
-
+};
+struct Token {
+    union TokenUnion value;
+    int type;
+};
+#endif
