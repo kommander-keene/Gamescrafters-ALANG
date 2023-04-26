@@ -23,7 +23,7 @@ int main(int argc, char *argv[]) {
   */
 
   // Demo Stuff
-  printf("Supported Commands:\n m(t)_r1_r2 \n r(t)_r1_a \n s(t)_r1_f \n o(t)_r1 \n i(t)_r1 \n j(m)_b \n");
+  printf("Supported Commands:\n m(t)_r1_r2 \n r(t)_r1_a \n s(t)_r1_f \n o(t)_r1 \n i(t)_r1 \n");
   printf("See comments in main.c for further information");
   printf("Type In Code Please! \n");
   
@@ -38,7 +38,6 @@ int main(int argc, char *argv[]) {
   TokenStack* tokens = tokenize(&stream);
   while (!ts_isEmpty(&tokens)) {
     Token* token = ts_pop(&tokens);
-    printf(token->type);
     if (token->type == 0) {
       TokenDirect direct = token->value.direct;
       switch(direct.tag) {
@@ -59,9 +58,7 @@ int main(int argc, char *argv[]) {
         break;
       }
     } else {
-      TokenSingle single = token->value.single;
-      // Only one case of this
-      printf("waiting (w) for duration of %f s\n", single.t);
+      //TODO wait doesn't work yet but who cares
     }
   }
 

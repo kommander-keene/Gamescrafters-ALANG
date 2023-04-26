@@ -36,7 +36,7 @@ TokenStack* tokenize(CharStack **stack) {
         case 'i':
             /* fade in */
             // i(t)_x_r2
-             readDirectToken(stack, &tokens, 'i');
+            readDirectToken(stack, &tokens, 'i');
             break;
         case 'w':
             /* wait */
@@ -140,12 +140,12 @@ void readSingleToken(CharStack** chars, TokenStack** tokens, const char tag) {
         r1 = extractIntParameter(chars);
     }
     // Form token
-    Token* t = (Token*)malloc(sizeof(Token));
-    t->type = 1;
-    t->value.single.t = time;
-    t->value.single.a = r1;
-    t->value.single.tag = tag;
-    ts_push(&tokens, t);
+    Token* tokenite = (Token*)malloc(sizeof(Token));
+    tokenite->type = 1;
+    tokenite->value.single.t = time;
+    tokenite->value.single.a = r1;
+    tokenite->value.single.tag = tag;
+    ts_push(&tokens, tokenite);
 }
 void readSplineToken(TokenStack** stack, const char tag) {
     return;
